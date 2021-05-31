@@ -54,6 +54,21 @@ static void button_toggled_cb(GtkToggleButton* button,
                                   nullptr, nullptr, nullptr);
 }
 
+static void entry_activate_cb(GtkEntry* entry, GtkHeaderBarPlugin* plugin) {
+  const gchar* packing =
+      (const gchar*)g_object_get_data(G_OBJECT(entry), "packing");
+  gint* index = (gint*)g_object_get_data(G_OBJECT(entry), "index");
+  const gchar* text = gtk_entry_get_text(entry);
+
+  FlValue* args = fl_value_new_list();
+  fl_value_append_take(args, fl_value_new_string(packing));
+  fl_value_append_take(args, fl_value_new_int(*index));
+  fl_value_append_take(args, fl_value_new_string(text));
+
+  fl_method_channel_invoke_method(plugin->channel, "entryActivate", args,
+                                  nullptr, nullptr, nullptr);
+}
+
 static GtkWidget* header_bar_get(GtkHeaderBarPlugin* self) {
   FlView* view = fl_plugin_registrar_get_view(self->registrar);
   GtkWidget* window = gtk_widget_get_toplevel(GTK_WIDGET(view));
@@ -106,6 +121,13 @@ static void header_bar_pack(GtkHeaderBarPlugin* self, const gchar* packing,
       }
       g_signal_connect(child, "toggled", G_CALLBACK(button_toggled_cb), self);
     }
+  } else if (g_strcmp0(fl_value_get_string(type), "GtkEntry") == 0) {
+    child = gtk_entry_new();
+    FlValue* text = fl_value_lookup_string(args, "text");
+    if (fl_value_is_valid(text, FL_VALUE_TYPE_STRING)) {
+      gtk_entry_set_text(GTK_ENTRY(child), fl_value_get_string(text));
+    }
+    g_signal_connect(child, "activate", G_CALLBACK(entry_activate_cb), self);
   }
 
   if (child) {

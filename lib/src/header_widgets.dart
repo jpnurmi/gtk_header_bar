@@ -73,3 +73,26 @@ class GtkCheckButton extends GtkToggleButton {
           sensitive: sensitive,
         );
 }
+
+class GtkEntry extends GtkWidget {
+  const GtkEntry({
+    this.text,
+    this.onActivate,
+    bool? visible,
+    bool? sensitive,
+  }) : super(
+          visible: visible,
+          sensitive: sensitive,
+        );
+
+  final String? text;
+  final ValueChanged<String>? onActivate;
+
+  @override
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      ...super.toJson(),
+      'text': text,
+    };
+  }
+}

@@ -51,6 +51,10 @@ Future<void> setGtkHeaderBar(GtkHeaderBar headerBar) async {
         final value = call.arguments.last as bool;
         (widget as GtkToggleButton).onToggled?.call(value);
         break;
+      case 'entryActivate':
+        final value = call.arguments.last as String;
+        (widget as GtkEntry).onActivate?.call(value);
+        break;
       default:
         throw UnimplementedError(call.method);
     }

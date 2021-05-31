@@ -26,6 +26,10 @@ void main() {
           visible: false,
           onToggled: (value) => print('check: $value'),
         ),
+        GtkEntry(
+          text: 'entry',
+          onActivate: (value) => print('entry: $value'),
+        ),
       ],
     ),
   );
