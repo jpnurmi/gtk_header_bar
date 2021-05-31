@@ -10,22 +10,21 @@ void main() {
       subtitle: 'subtitle...',
       start: <GtkWidget>[
         GtkButton(
-          label: 'start 1',
-          onClicked: () => print('start 1'),
+          label: 'button',
+          onClicked: () => print('click'),
         ),
-        GtkButton(
-          label: 'start 2',
-          onClicked: () => print('start 2'),
+        GtkToggleButton(
+          label: 'toggle',
+          sensitive: false,
+          onToggled: (value) => print('toggle: $value'),
         ),
       ],
       end: <GtkWidget>[
-        GtkButton(
-          label: 'end 1',
-          onClicked: () => print('end 1'),
-        ),
-        GtkButton(
-          label: 'end 2',
-          onClicked: () => print('end 2'),
+        GtkCheckButton(
+          label: 'check',
+          active: true,
+          visible: false,
+          onToggled: (value) => print('check: $value'),
         ),
       ],
     ),

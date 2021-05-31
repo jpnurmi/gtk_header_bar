@@ -1,37 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
-import 'package:meta/meta.dart';
 
-@immutable
-class GtkWidget {
-  const GtkWidget();
+import 'header_widgets.dart';
 
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'type': runtimeType.toString(),
-    };
-  }
-}
-
-@immutable
-class GtkButton extends GtkWidget {
-  const GtkButton({this.label, this.onClicked});
-
-  final String? label;
-  final VoidCallback? onClicked;
-
-  @override
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      ...super.toJson(),
-      'label': label,
-    };
-  }
-}
-
-@immutable
 class GtkHeaderBar {
   const GtkHeaderBar({
     this.title,
@@ -65,20 +37,19 @@ const MethodChannel _channel = MethodChannel('gtk_header_bar');
 
 Future<void> setGtkHeaderBar(GtkHeaderBar headerBar) async {
   _channel.setMethodCallHandler((call) async {
+    final packing = call.arguments.first as String;
+    final index = call.arguments[1] as int;
+    final widget = packing == 'start'
+        ? headerBar.start?.getOrNull(index)
+        : headerBar.end?.getOrNull(index);
+
     switch (call.method) {
       case 'buttonClicked':
-        switch (call.arguments.first as String) {
-          case 'start':
-            final button =
-                headerBar.start?[call.arguments.last as int] as GtkButton?;
-            button?.onClicked?.call();
-            break;
-          case 'end':
-            final button =
-                headerBar.end?[call.arguments.last as int] as GtkButton?;
-            button?.onClicked?.call();
-            break;
-        }
+        (widget as GtkButton).onClicked?.call();
+        break;
+      case 'buttonToggled':
+        final value = call.arguments.last as bool;
+        (widget as GtkToggleButton).onToggled?.call(value);
         break;
       default:
         throw UnimplementedError(call.method);
@@ -89,4 +60,8 @@ Future<void> setGtkHeaderBar(GtkHeaderBar headerBar) async {
     'setHeaderBar',
     headerBar.toJson(),
   );
+}
+
+extension _NullableList<T> on List<T> {
+  T? getOrNull(int index) => index >= 0 && index < length ? this[index] : null;
 }
