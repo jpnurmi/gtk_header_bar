@@ -11,6 +11,10 @@ void main() {
       start: <GtkWidget>[
         GtkButton(
           label: 'button',
+          styleContext: const GtkStyleContext(
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.green,
+          ),
           onClicked: () => print('click'),
         ),
         GtkToggleButton(

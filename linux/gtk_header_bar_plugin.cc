@@ -82,6 +82,59 @@ static GtkWidget* header_bar_get(GtkHeaderBarPlugin* self) {
   return header_bar;
 }
 
+static void to_rgba(int argb, GdkRGBA* rgba) {
+  rgba->alpha = ((argb >> 24) & 0xff) / 255.0;
+  rgba->red = ((argb >> 16) & 0xff) / 255.0;
+  rgba->green = ((argb >> 8) & 0xff) / 255.0;
+  rgba->blue = (argb & 0xff) / 255.0;
+}
+
+static void style_context_set_color(GtkStyleContext* style_context,
+                                    const gchar* property, int argb) {
+  GdkRGBA rgba;
+  to_rgba(argb, &rgba);
+
+  gchar* css =
+      g_strdup_printf("* { %s: %s; }", property, gdk_rgba_to_string(&rgba));
+
+  GtkCssProvider* css_provider = gtk_css_provider_new();
+  gtk_css_provider_load_from_data(css_provider, css, -1, NULL);
+
+  gtk_style_context_add_provider(style_context,
+                                 GTK_STYLE_PROVIDER(css_provider),
+                                 GTK_STYLE_PROVIDER_PRIORITY_USER);
+
+  g_free(css);
+}
+
+static void style_context_set(GtkWidget* widget, FlValue* args) {
+  GtkStyleContext* style_context = gtk_widget_get_style_context(widget);
+
+  FlValue* foreground = fl_value_lookup_string(args, "foregroundColor");
+  if (fl_value_is_valid(foreground, FL_VALUE_TYPE_INT)) {
+    style_context_set_color(style_context, "color",
+                            fl_value_get_int(foreground));
+  }
+
+  FlValue* background = fl_value_lookup_string(args, "backgroundColor");
+  if (fl_value_is_valid(background, FL_VALUE_TYPE_INT)) {
+    style_context_set_color(style_context, "background-color",
+                            fl_value_get_int(background));
+  }
+}
+
+static void widget_properties_set(GtkWidget* widget, FlValue* args) {
+  FlValue* style_context = fl_value_lookup_string(args, "styleContext");
+  if (fl_value_is_valid(style_context, FL_VALUE_TYPE_MAP)) {
+    style_context_set(widget, style_context);
+  }
+
+  FlValue* sensitive = fl_value_lookup_string(args, "sensitive");
+  if (fl_value_is_valid(sensitive, FL_VALUE_TYPE_BOOL)) {
+    gtk_widget_set_sensitive(widget, fl_value_get_bool(sensitive));
+  }
+}
+
 static void header_bar_pack(GtkHeaderBarPlugin* self, const gchar* packing,
                             gint index, FlValue* args,
                             void (*pack)(GtkHeaderBar*, GtkWidget*)) {
@@ -136,10 +189,7 @@ static void header_bar_pack(GtkHeaderBarPlugin* self, const gchar* packing,
     g_object_set_data_full(G_OBJECT(child), "index", g_intdup(index),
                            (GDestroyNotify)g_free);
 
-    FlValue* sensitive = fl_value_lookup_string(args, "sensitive");
-    if (fl_value_is_valid(sensitive, FL_VALUE_TYPE_BOOL)) {
-      gtk_widget_set_sensitive(child, fl_value_get_bool(sensitive));
-    }
+    widget_properties_set(child, args);
 
     pack(GTK_HEADER_BAR(header_bar), child);
 

@@ -2,17 +2,40 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 
+class GtkStyleContext {
+  const GtkStyleContext({
+    this.foregroundColor,
+    this.backgroundColor,
+  });
+
+  final Color? foregroundColor;
+  final Color? backgroundColor;
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'foregroundColor': foregroundColor?.value,
+      'backgroundColor': backgroundColor?.value,
+    };
+  }
+}
+
 class GtkWidget {
-  const GtkWidget({this.visible, this.sensitive});
+  const GtkWidget({
+    this.visible,
+    this.sensitive,
+    this.styleContext,
+  });
 
   final bool? visible;
   final bool? sensitive;
+  final GtkStyleContext? styleContext;
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'type': runtimeType.toString(),
       'visible': visible,
       'sensitive': sensitive,
+      'styleContext': styleContext?.toJson(),
     };
   }
 }
@@ -23,7 +46,12 @@ class GtkButton extends GtkWidget {
     this.onClicked,
     bool? visible,
     bool? sensitive,
-  }) : super(visible: visible, sensitive: sensitive);
+    GtkStyleContext? styleContext,
+  }) : super(
+          visible: visible,
+          sensitive: sensitive,
+          styleContext: styleContext,
+        );
 
   final String? label;
   final VoidCallback? onClicked;
@@ -44,7 +72,13 @@ class GtkToggleButton extends GtkButton {
     this.onToggled,
     bool? visible,
     bool? sensitive,
-  }) : super(label: label, visible: visible, sensitive: sensitive);
+    GtkStyleContext? styleContext,
+  }) : super(
+          label: label,
+          visible: visible,
+          sensitive: sensitive,
+          styleContext: styleContext,
+        );
 
   final bool? active;
   final ValueChanged<bool>? onToggled;
@@ -65,12 +99,14 @@ class GtkCheckButton extends GtkToggleButton {
     ValueChanged<bool>? onToggled,
     bool? visible,
     bool? sensitive,
+    GtkStyleContext? styleContext,
   }) : super(
           label: label,
           active: active,
           onToggled: onToggled,
           visible: visible,
           sensitive: sensitive,
+          styleContext: styleContext,
         );
 }
 
@@ -80,9 +116,11 @@ class GtkEntry extends GtkWidget {
     this.onActivate,
     bool? visible,
     bool? sensitive,
+    GtkStyleContext? styleContext,
   }) : super(
           visible: visible,
           sensitive: sensitive,
+          styleContext: styleContext,
         );
 
   final String? text;
