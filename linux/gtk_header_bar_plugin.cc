@@ -146,6 +146,10 @@ static void header_bar_pack_all(GtkHeaderBarPlugin* self, FlValue* args,
 static void header_bar_set_args(GtkHeaderBarPlugin* self, FlValue* args) {
   GtkWidget* header_bar = header_bar_get(self);
 
+  // ### TODO: don't re-create everything
+  gtk_container_foreach(GTK_CONTAINER(header_bar),
+                        (GtkCallback)gtk_widget_destroy, nullptr);
+
   FlValue* title = fl_value_lookup_string(args, "title");
   if (fl_value_is_valid(title, FL_VALUE_TYPE_STRING)) {
     gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar),
