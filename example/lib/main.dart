@@ -31,6 +31,21 @@ class _MyAppState extends State<MyApp> {
           key: const ValueKey('button2'),
           onClicked: () => print('click 2'),
         ),
+        GtkMenuButton(
+          label: 'menu',
+          key: const ValueKey('menu_button'),
+          popup: GtkMenu(
+            key: const ValueKey('menu'),
+            items: <GtkMenuItem>[
+              for (var i = 0; i < 3; ++i)
+                GtkMenuItem(
+                  label: 'item $i',
+                  key: ValueKey('menu_item$i'),
+                  onActivate: () => print('activate: $i'),
+                ),
+            ],
+          ),
+        ),
         GtkToggleButton(
           label: 'toggle',
           key: const ValueKey('button3'),
