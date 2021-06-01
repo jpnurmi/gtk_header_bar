@@ -191,52 +191,60 @@ static void widget_update(GtkWidget* widget, FlValue* args) {
   }
 }
 
-static void header_bar_pack(GtkHeaderBarPlugin* self, FlValue* args,
-                            void (*pack)(GtkHeaderBar*, GtkWidget*)) {
-  FlValue* type = fl_value_lookup_string(args, "type");
-  if (!fl_value_is_valid(type, FL_VALUE_TYPE_STRING)) {
-    return;
-  }
-
-  GtkWidget* child = nullptr;
-  GtkWidget* header_bar = header_bar_get(self);
-
+static GtkWidget* widget_cache_lookup(GtkHeaderBarPlugin* self, FlValue* args) {
+  GtkWidget* widget = nullptr;
   FlValue* key = fl_value_lookup_string(args, kUniqueKey);
-  gpointer value = nullptr;
   if (fl_value_is_valid(key, FL_VALUE_TYPE_STRING)) {
-    value = g_hash_table_lookup(self->widgets, fl_value_get_string(key));
+    gpointer value =
+        g_hash_table_lookup(self->widgets, fl_value_get_string(key));
     if (GTK_IS_WIDGET(value)) {
-      child = GTK_WIDGET(value);
+      widget = GTK_WIDGET(value);
     }
   }
+  return widget;
+}
 
-  if (!child) {
-    child = widget_create(self, fl_value_get_string(type));
-    widget_init(self, child);
-  }
-
-  if (child) {
-    if (!value && fl_value_is_valid(key, FL_VALUE_TYPE_STRING)) {
-      gchar* data = g_strdup(fl_value_get_string(key));
-      g_object_set_data(G_OBJECT(child), kUniqueKey, data);
-      g_hash_table_insert(self->widgets, data, child);
-    }
-
-    if (!gtk_widget_get_parent(child)) {
-      pack(GTK_HEADER_BAR(header_bar), child);
-    }
-
-    widget_update(child, args);
+static void widget_cache_insert(GtkHeaderBarPlugin* self, GtkWidget* widget,
+                                FlValue* args) {
+  FlValue* key = fl_value_lookup_string(args, kUniqueKey);
+  if (fl_value_is_valid(key, FL_VALUE_TYPE_STRING)) {
+    gchar* data = g_strdup(fl_value_get_string(key));
+    g_object_set_data(G_OBJECT(widget), kUniqueKey, data);
+    g_hash_table_insert(self->widgets, data, widget);
   }
 }
 
+static GtkWidget* widget_get(GtkHeaderBarPlugin* self, FlValue* args) {
+  GtkWidget* widget = widget_cache_lookup(self, args);
+  if (!widget) {
+    FlValue* type = fl_value_lookup_string(args, "type");
+    if (!fl_value_is_valid(type, FL_VALUE_TYPE_STRING)) {
+      return nullptr;
+    }
+
+    widget = widget_create(self, fl_value_get_string(type));
+    widget_init(self, widget);
+
+    widget_cache_insert(self, widget, args);
+  }
+
+  return widget;
+}
+
 static void header_bar_pack_all(GtkHeaderBarPlugin* self, FlValue* children,
-                                void (*pack)(GtkHeaderBar*, GtkWidget*)) {
+                                void (*header_bar_pack)(GtkHeaderBar*,
+                                                        GtkWidget*)) {
+  GtkWidget* header_bar = header_bar_get(self);
+
   self->rebuild = TRUE;
   size_t length = fl_value_get_length(children);
   for (size_t i = 0; i < length; ++i) {
-    FlValue* child = fl_value_get_list_value(children, i);
-    header_bar_pack(self, child, pack);
+    FlValue* args = fl_value_get_list_value(children, i);
+    GtkWidget* child = widget_get(self, args);
+    if (!gtk_widget_get_parent(child)) {
+      header_bar_pack(GTK_HEADER_BAR(header_bar), child);
+    }
+    widget_update(child, args);
   }
   self->rebuild = FALSE;
 }
