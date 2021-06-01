@@ -104,23 +104,18 @@ static GtkWidget* widget_create(GtkHeaderBarPlugin* self, const gchar* type) {
   GtkWidget* widget = nullptr;
   if (g_strcmp0(type, "GtkButton") == 0) {
     widget = gtk_button_new();
-    g_signal_connect(widget, "clicked", G_CALLBACK(button_clicked_cb), self);
   } else if (g_strcmp0(type, "GtkToggleButton") == 0) {
     widget = gtk_toggle_button_new();
-    g_signal_connect(widget, "toggled", G_CALLBACK(button_toggled_cb), self);
   } else if (g_strcmp0(type, "GtkCheckButton") == 0) {
     widget = gtk_check_button_new();
-    g_signal_connect(widget, "toggled", G_CALLBACK(button_toggled_cb), self);
   } else if (g_strcmp0(type, "GtkMenuButton") == 0) {
     widget = gtk_menu_button_new();
-    g_signal_connect(widget, "toggled", G_CALLBACK(button_toggled_cb), self);
   } else if (g_strcmp0(type, "GtkMenu") == 0) {
     widget = gtk_menu_new();
   } else if (g_strcmp0(type, "GtkMenuItem") == 0) {
     widget = gtk_menu_item_new();
   } else if (g_strcmp0(type, "GtkEntry") == 0) {
     widget = gtk_entry_new();
-    g_signal_connect(widget, "activate", G_CALLBACK(entry_activate_cb), self);
   }
   return widget;
 }
