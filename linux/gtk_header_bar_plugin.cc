@@ -90,17 +90,60 @@ static GtkWidget* header_bar_get(GtkHeaderBarPlugin* self) {
   return header_bar;
 }
 
-static void widget_properties_set(GtkWidget* widget, FlValue* args) {
-  FlValue* sensitive = fl_value_lookup_string(args, "sensitive");
-  if (fl_value_is_valid(sensitive, FL_VALUE_TYPE_BOOL)) {
-    gtk_widget_set_sensitive(widget, fl_value_get_bool(sensitive));
+static GtkWidget* widget_create(GtkHeaderBarPlugin* self, const gchar* type,
+                                FlValue* args) {
+  GtkWidget* widget = nullptr;
+  if (g_strcmp0(type, "GtkButton") == 0) {
+    widget = gtk_button_new();
+    g_signal_connect(widget, "clicked", G_CALLBACK(button_clicked_cb), self);
+  } else if (g_strcmp0(type, "GtkToggleButton") == 0) {
+    widget = gtk_toggle_button_new();
+    g_signal_connect(widget, "toggled", G_CALLBACK(button_toggled_cb), self);
+  } else if (g_strcmp0(type, "GtkCheckButton") == 0) {
+    widget = gtk_check_button_new();
+    g_signal_connect(widget, "toggled", G_CALLBACK(button_toggled_cb), self);
+  } else if (g_strcmp0(type, "GtkEntry") == 0) {
+    widget = gtk_entry_new();
+    g_signal_connect(widget, "activate", G_CALLBACK(entry_activate_cb), self);
+  }
+  return widget;
+}
+
+static void widget_update(GtkWidget* widget, const gchar* type, FlValue* args) {
+  if (GTK_IS_BUTTON(widget)) {
+    FlValue* label = fl_value_lookup_string(args, "label");
+    if (fl_value_is_valid(label, FL_VALUE_TYPE_STRING)) {
+      gtk_button_set_label(GTK_BUTTON(widget), fl_value_get_string(label));
+    }
   }
 
-  FlValue* visible = fl_value_lookup_string(args, "visible");
-  if (fl_value_is_valid(visible, FL_VALUE_TYPE_BOOL)) {
-    gtk_widget_set_visible(widget, fl_value_get_bool(visible));
-  } else {
-    gtk_widget_show(widget);
+  if (GTK_IS_TOGGLE_BUTTON(widget)) {
+    FlValue* active = fl_value_lookup_string(args, "active");
+    if (fl_value_is_valid(active, FL_VALUE_TYPE_BOOL)) {
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
+                                   fl_value_get_bool(active));
+    }
+  }
+
+  if (GTK_IS_ENTRY(widget)) {
+    FlValue* text = fl_value_lookup_string(args, "text");
+    if (fl_value_is_valid(text, FL_VALUE_TYPE_STRING)) {
+      gtk_entry_set_text(GTK_ENTRY(widget), fl_value_get_string(text));
+    }
+  }
+
+  if (GTK_IS_WIDGET(widget)) {
+    FlValue* sensitive = fl_value_lookup_string(args, "sensitive");
+    if (fl_value_is_valid(sensitive, FL_VALUE_TYPE_BOOL)) {
+      gtk_widget_set_sensitive(widget, fl_value_get_bool(sensitive));
+    }
+
+    FlValue* visible = fl_value_lookup_string(args, "visible");
+    if (fl_value_is_valid(visible, FL_VALUE_TYPE_BOOL)) {
+      gtk_widget_set_visible(widget, fl_value_get_bool(visible));
+    } else {
+      gtk_widget_show(widget);
+    }
   }
 }
 
@@ -124,52 +167,8 @@ static void header_bar_pack(GtkHeaderBarPlugin* self, const gchar* packing,
     }
   }
 
-  if (g_strcmp0(fl_value_get_string(type), "GtkButton") == 0) {
-    if (!child) {
-      child = gtk_button_new();
-      g_signal_connect(child, "clicked", G_CALLBACK(button_clicked_cb), self);
-    }
-    FlValue* label = fl_value_lookup_string(args, "label");
-    if (fl_value_is_valid(label, FL_VALUE_TYPE_STRING)) {
-      gtk_button_set_label(GTK_BUTTON(child), fl_value_get_string(label));
-    }
-  } else if (g_strcmp0(fl_value_get_string(type), "GtkToggleButton") == 0) {
-    if (!child) {
-      child = gtk_toggle_button_new();
-      g_signal_connect(child, "toggled", G_CALLBACK(button_toggled_cb), self);
-    }
-    FlValue* label = fl_value_lookup_string(args, "label");
-    if (fl_value_is_valid(label, FL_VALUE_TYPE_STRING)) {
-      gtk_button_set_label(GTK_BUTTON(child), fl_value_get_string(label));
-    }
-    FlValue* active = fl_value_lookup_string(args, "active");
-    if (fl_value_is_valid(active, FL_VALUE_TYPE_BOOL)) {
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(child),
-                                   fl_value_get_bool(active));
-    }
-  } else if (g_strcmp0(fl_value_get_string(type), "GtkCheckButton") == 0) {
-    if (!child) {
-      child = gtk_check_button_new();
-      g_signal_connect(child, "toggled", G_CALLBACK(button_toggled_cb), self);
-    }
-    FlValue* label = fl_value_lookup_string(args, "label");
-    if (fl_value_is_valid(label, FL_VALUE_TYPE_STRING)) {
-      gtk_button_set_label(GTK_BUTTON(child), fl_value_get_string(label));
-    }
-    FlValue* active = fl_value_lookup_string(args, "active");
-    if (fl_value_is_valid(active, FL_VALUE_TYPE_BOOL)) {
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(child),
-                                   fl_value_get_bool(active));
-    }
-  } else if (g_strcmp0(fl_value_get_string(type), "GtkEntry") == 0) {
-    if (!child) {
-      child = gtk_entry_new();
-      g_signal_connect(child, "activate", G_CALLBACK(entry_activate_cb), self);
-    }
-    FlValue* text = fl_value_lookup_string(args, "text");
-    if (fl_value_is_valid(text, FL_VALUE_TYPE_STRING)) {
-      gtk_entry_set_text(GTK_ENTRY(child), fl_value_get_string(text));
-    }
+  if (!child) {
+    child = widget_create(self, fl_value_get_string(type), args);
   }
 
   if (child) {
@@ -188,7 +187,7 @@ static void header_bar_pack(GtkHeaderBarPlugin* self, const gchar* packing,
       pack(GTK_HEADER_BAR(header_bar), child);
     }
 
-    widget_properties_set(child, args);
+    widget_update(child, fl_value_get_string(type), args);
   }
 }
 
