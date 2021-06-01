@@ -68,6 +68,9 @@ class _GtkHeaderBarState extends State<GtkHeaderBar> {
           final value = call.arguments.last as String;
           (child as GtkEntry).onActivate?.call(value);
           break;
+        case 'menuItemActivate':
+          (child as GtkMenuItem).onActivate?.call();
+          break;
         default:
           throw UnimplementedError(call.method);
       }

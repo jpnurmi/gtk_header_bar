@@ -102,6 +102,13 @@ static GtkWidget* widget_create(GtkHeaderBarPlugin* self, const gchar* type,
   } else if (g_strcmp0(type, "GtkCheckButton") == 0) {
     widget = gtk_check_button_new();
     g_signal_connect(widget, "toggled", G_CALLBACK(button_toggled_cb), self);
+  } else if (g_strcmp0(type, "GtkMenuButton") == 0) {
+    widget = gtk_menu_button_new();
+    g_signal_connect(widget, "toggled", G_CALLBACK(button_toggled_cb), self);
+  } else if (g_strcmp0(type, "GtkMenu") == 0) {
+    widget = gtk_menu_new();
+  } else if (g_strcmp0(type, "GtkMenuItem") == 0) {
+    widget = gtk_menu_item_new();
   } else if (g_strcmp0(type, "GtkEntry") == 0) {
     widget = gtk_entry_new();
     g_signal_connect(widget, "activate", G_CALLBACK(entry_activate_cb), self);
@@ -122,6 +129,28 @@ static void widget_update(GtkWidget* widget, const gchar* type, FlValue* args) {
     if (fl_value_is_valid(active, FL_VALUE_TYPE_BOOL)) {
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
                                    fl_value_get_bool(active));
+    }
+  }
+
+  if (GTK_IS_MENU_BUTTON(widget)) {
+    // FlValue* popup = fl_value_lookup_string(args, "popup");
+    // if (fl_value_is_valid(label, FL_VALUE_TYPE_MAP)) {
+    //   ...
+    // }
+  }
+
+  if (GTK_IS_MENU(widget)) {
+    FlValue* title = fl_value_lookup_string(args, "title");
+    if (fl_value_is_valid(title, FL_VALUE_TYPE_STRING)) {
+      gtk_menu_set_title(GTK_MENU(widget), fl_value_get_string(title));
+    }
+  }
+
+  if (GTK_IS_MENU_ITEM(widget)) {
+    FlValue* label = fl_value_lookup_string(args, "label");
+    if (fl_value_is_valid(label, FL_VALUE_TYPE_STRING)) {
+      gtk_menu_item_set_label(GTK_MENU_ITEM(widget),
+                              fl_value_get_string(label));
     }
   }
 

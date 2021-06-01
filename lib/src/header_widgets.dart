@@ -93,6 +93,86 @@ class GtkCheckButton extends GtkToggleButton {
         );
 }
 
+class GtkMenuButton extends GtkToggleButton {
+  const GtkMenuButton({
+    Key? key,
+    bool? visible,
+    bool? sensitive,
+    String? label,
+    bool? active,
+    ValueChanged<bool>? onToggled,
+    this.popup,
+  }) : super(
+          key: key,
+          visible: visible,
+          sensitive: sensitive,
+          label: label,
+          active: active,
+          onToggled: onToggled,
+        );
+
+  final GtkWidget? popup;
+
+  @override
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      ...super.toJson(),
+      'popup': popup?.toJson(),
+    };
+  }
+}
+
+class GtkMenu extends GtkWidget {
+  const GtkMenu({
+    Key? key,
+    bool? visible,
+    bool? sensitive,
+    this.title,
+    this.items,
+  }) : super(
+          key: key,
+          visible: visible,
+          sensitive: sensitive,
+        );
+
+  final String? title;
+  final List<GtkWidget>? items;
+
+  @override
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      ...super.toJson(),
+      'title': title,
+      'items': items?.map((item) => item.toJson()).toList(),
+    };
+  }
+}
+
+class GtkMenuItem extends GtkWidget {
+  const GtkMenuItem({
+    Key? key,
+    bool? visible,
+    bool? sensitive,
+    this.label,
+    this.onActivate,
+  }) : super(
+          key: key,
+          visible: visible,
+          sensitive: sensitive,
+        );
+
+  final String? label;
+  final VoidCallback? onActivate;
+
+  @override
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      ...super.toJson(),
+      'label': label,
+    };
+  }
+}
+
 class GtkEntry extends GtkWidget {
   const GtkEntry({
     Key? key,
