@@ -210,13 +210,17 @@ static void header_bar_pack_all(GtkHeaderBarPlugin* self, FlValue* args,
 static void header_bar_set_args(GtkHeaderBarPlugin* self, FlValue* args) {
   GtkWidget* header_bar = header_bar_get(self);
 
-  GList* child = gtk_container_get_children(GTK_CONTAINER(header_bar));
+  GList* children = gtk_container_get_children(GTK_CONTAINER(header_bar));
+  GList* child = children;
   while (child) {
     if (!g_object_get_data(G_OBJECT(child->data), "key")) {
       gtk_widget_destroy(GTK_WIDGET(child->data));
+    } else {
+      gtk_widget_hide(GTK_WIDGET(child->data));
     }
     child = child->next;
   }
+  g_list_free(children);
 
   FlValue* title = fl_value_lookup_string(args, "title");
   if (fl_value_is_valid(title, FL_VALUE_TYPE_STRING)) {
