@@ -4,16 +4,19 @@ import 'package:flutter/foundation.dart';
 
 class GtkWidget {
   const GtkWidget({
+    this.key,
     this.visible,
     this.sensitive,
   });
 
+  final Key? key;
   final bool? visible;
   final bool? sensitive;
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'type': runtimeType.toString(),
+      'key': key?.toString(),
       'visible': visible,
       'sensitive': sensitive,
     };
@@ -22,11 +25,13 @@ class GtkWidget {
 
 class GtkButton extends GtkWidget {
   const GtkButton({
-    this.label,
-    this.onClicked,
+    Key? key,
     bool? visible,
     bool? sensitive,
+    this.label,
+    this.onClicked,
   }) : super(
+          key: key,
           visible: visible,
           sensitive: sensitive,
         );
@@ -45,15 +50,17 @@ class GtkButton extends GtkWidget {
 
 class GtkToggleButton extends GtkButton {
   const GtkToggleButton({
+    Key? key,
+    bool? visible,
+    bool? sensitive,
     String? label,
     this.active,
     this.onToggled,
-    bool? visible,
-    bool? sensitive,
   }) : super(
-          label: label,
+          key: key,
           visible: visible,
           sensitive: sensitive,
+          label: label,
         );
 
   final bool? active;
@@ -70,27 +77,31 @@ class GtkToggleButton extends GtkButton {
 
 class GtkCheckButton extends GtkToggleButton {
   const GtkCheckButton({
+    Key? key,
+    bool? visible,
+    bool? sensitive,
     String? label,
     bool? active,
     ValueChanged<bool>? onToggled,
-    bool? visible,
-    bool? sensitive,
   }) : super(
+          key: key,
+          visible: visible,
+          sensitive: sensitive,
           label: label,
           active: active,
           onToggled: onToggled,
-          visible: visible,
-          sensitive: sensitive,
         );
 }
 
 class GtkEntry extends GtkWidget {
   const GtkEntry({
-    this.text,
-    this.onActivate,
+    Key? key,
     bool? visible,
     bool? sensitive,
+    this.text,
+    this.onActivate,
   }) : super(
+          key: key,
           visible: visible,
           sensitive: sensitive,
         );
