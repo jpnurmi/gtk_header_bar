@@ -1,18 +1,21 @@
-import 'dart:async';
-
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 import 'header_widgets.dart';
 
-class GtkHeaderBar {
+const MethodChannel _channel = MethodChannel('gtk_header_bar');
+
+class GtkHeaderBar extends StatefulWidget {
   const GtkHeaderBar({
+    Key? key,
     this.title,
     this.subtitle,
     this.showCloseButton,
     this.decorationLayout,
     this.start,
     this.end,
-  });
+    this.child,
+  }) : super(key: key);
 
   final String? title;
   final String? subtitle;
@@ -20,50 +23,63 @@ class GtkHeaderBar {
   final String? decorationLayout;
   final List<GtkWidget>? start;
   final List<GtkWidget>? end;
+  final Widget? child;
 
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'title': title,
-      'subtitle': subtitle,
-      'showCloseButton': showCloseButton,
-      'decorationLayout': decorationLayout,
-      'start': start?.map((widget) => widget.toJson()).toList(),
-      'end': end?.map((widget) => widget.toJson()).toList(),
-    };
-  }
+  @override
+  State<GtkHeaderBar> createState() => _GtkHeaderBarState();
 }
 
-const MethodChannel _channel = MethodChannel('gtk_header_bar');
+class _GtkHeaderBarState extends State<GtkHeaderBar> {
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'title': widget.title,
+      'subtitle': widget.subtitle,
+      'showCloseButton': widget.showCloseButton,
+      'decorationLayout': widget.decorationLayout,
+      'start': widget.start?.map((widget) => widget.toJson()).toList(),
+      'end': widget.end?.map((widget) => widget.toJson()).toList(),
+    };
+  }
 
-Future<void> setGtkHeaderBar(GtkHeaderBar headerBar) async {
-  _channel.setMethodCallHandler((call) async {
-    final packing = call.arguments.first as String;
-    final index = call.arguments[1] as int;
-    final widget = packing == 'start'
-        ? headerBar.start?.getOrNull(index)
-        : headerBar.end?.getOrNull(index);
+  @override
+  Widget build(BuildContext context) {
+    return widget.child ?? const SizedBox.shrink();
+  }
 
-    switch (call.method) {
-      case 'buttonClicked':
-        (widget as GtkButton).onClicked?.call();
-        break;
-      case 'buttonToggled':
-        final value = call.arguments.last as bool;
-        (widget as GtkToggleButton).onToggled?.call(value);
-        break;
-      case 'entryActivate':
-        final value = call.arguments.last as String;
-        (widget as GtkEntry).onActivate?.call(value);
-        break;
-      default:
-        throw UnimplementedError(call.method);
-    }
-  });
+  @override
+  void initState() {
+    super.initState();
+    _channel.setMethodCallHandler((call) async {
+      final packing = call.arguments.first as String;
+      final index = call.arguments[1] as int;
+      final child = packing == 'start'
+          ? widget.start?.getOrNull(index)
+          : widget.end?.getOrNull(index);
 
-  return _channel.invokeMethod<void>(
-    'setHeaderBar',
-    headerBar.toJson(),
-  );
+      switch (call.method) {
+        case 'buttonClicked':
+          (child as GtkButton).onClicked?.call();
+          break;
+        case 'buttonToggled':
+          final value = call.arguments.last as bool;
+          (child as GtkToggleButton).onToggled?.call(value);
+          break;
+        case 'entryActivate':
+          final value = call.arguments.last as String;
+          (child as GtkEntry).onActivate?.call(value);
+          break;
+        default:
+          throw UnimplementedError(call.method);
+      }
+    });
+    _channel.invokeMethod<void>('setHeaderBar', toJson());
+  }
+
+  @override
+  void didUpdateWidget(GtkHeaderBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _channel.invokeMethod<void>('setHeaderBar', toJson());
+  }
 }
 
 extension _NullableList<T> on List<T> {
