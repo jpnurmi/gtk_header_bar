@@ -11,6 +11,8 @@ struct _GtkHeaderBarPlugin {
   GObject parent_instance;
   FlPluginRegistrar* registrar;
   FlMethodChannel* channel;
+  GHashTable* widgets;
+  gboolean rebuild;
 };
 
 G_DEFINE_TYPE(GtkHeaderBarPlugin, gtk_header_bar_plugin, g_object_get_type())
@@ -26,6 +28,8 @@ static bool fl_value_is_valid(FlValue* value, FlValueType type) {
 }
 
 static void button_clicked_cb(GtkButton* button, GtkHeaderBarPlugin* plugin) {
+  if (plugin->rebuild) return;
+
   const gchar* packing =
       (const gchar*)g_object_get_data(G_OBJECT(button), "packing");
   gint* index = (gint*)g_object_get_data(G_OBJECT(button), "index");
@@ -40,6 +44,8 @@ static void button_clicked_cb(GtkButton* button, GtkHeaderBarPlugin* plugin) {
 
 static void button_toggled_cb(GtkToggleButton* button,
                               GtkHeaderBarPlugin* plugin) {
+  if (plugin->rebuild) return;
+
   const gchar* packing =
       (const gchar*)g_object_get_data(G_OBJECT(button), "packing");
   gint* index = (gint*)g_object_get_data(G_OBJECT(button), "index");
@@ -55,6 +61,8 @@ static void button_toggled_cb(GtkToggleButton* button,
 }
 
 static void entry_activate_cb(GtkEntry* entry, GtkHeaderBarPlugin* plugin) {
+  if (plugin->rebuild) return;
+
   const gchar* packing =
       (const gchar*)g_object_get_data(G_OBJECT(entry), "packing");
   gint* index = (gint*)g_object_get_data(G_OBJECT(entry), "index");
@@ -87,6 +95,13 @@ static void widget_properties_set(GtkWidget* widget, FlValue* args) {
   if (fl_value_is_valid(sensitive, FL_VALUE_TYPE_BOOL)) {
     gtk_widget_set_sensitive(widget, fl_value_get_bool(sensitive));
   }
+
+  FlValue* visible = fl_value_lookup_string(args, "visible");
+  if (fl_value_is_valid(visible, FL_VALUE_TYPE_BOOL)) {
+    gtk_widget_set_visible(widget, fl_value_get_bool(visible));
+  } else {
+    gtk_widget_show(widget);
+  }
 }
 
 static void header_bar_pack(GtkHeaderBarPlugin* self, const gchar* packing,
@@ -100,59 +115,80 @@ static void header_bar_pack(GtkHeaderBarPlugin* self, const gchar* packing,
   GtkWidget* child = nullptr;
   GtkWidget* header_bar = header_bar_get(self);
 
+  FlValue* key = fl_value_lookup_string(args, "key");
+  gpointer value = nullptr;
+  if (fl_value_is_valid(key, FL_VALUE_TYPE_STRING)) {
+    value = g_hash_table_lookup(self->widgets, fl_value_get_string(key));
+    if (GTK_IS_WIDGET(value)) {
+      child = GTK_WIDGET(value);
+    }
+  }
+
   if (g_strcmp0(fl_value_get_string(type), "GtkButton") == 0) {
-    FlValue* label = fl_value_lookup_string(args, "label");
-    if (fl_value_is_valid(label, FL_VALUE_TYPE_STRING)) {
-      child = gtk_button_new_with_label(fl_value_get_string(label));
+    if (!child) {
+      child = gtk_button_new();
       g_signal_connect(child, "clicked", G_CALLBACK(button_clicked_cb), self);
     }
-  } else if (g_strcmp0(fl_value_get_string(type), "GtkToggleButton") == 0) {
     FlValue* label = fl_value_lookup_string(args, "label");
     if (fl_value_is_valid(label, FL_VALUE_TYPE_STRING)) {
-      child = gtk_toggle_button_new_with_label(fl_value_get_string(label));
-      FlValue* active = fl_value_lookup_string(args, "active");
-      if (fl_value_is_valid(active, FL_VALUE_TYPE_BOOL)) {
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(child),
-                                     fl_value_get_bool(active));
-      }
+      gtk_button_set_label(GTK_BUTTON(child), fl_value_get_string(label));
+    }
+  } else if (g_strcmp0(fl_value_get_string(type), "GtkToggleButton") == 0) {
+    if (!child) {
+      child = gtk_toggle_button_new();
       g_signal_connect(child, "toggled", G_CALLBACK(button_toggled_cb), self);
+    }
+    FlValue* label = fl_value_lookup_string(args, "label");
+    if (fl_value_is_valid(label, FL_VALUE_TYPE_STRING)) {
+      gtk_button_set_label(GTK_BUTTON(child), fl_value_get_string(label));
+    }
+    FlValue* active = fl_value_lookup_string(args, "active");
+    if (fl_value_is_valid(active, FL_VALUE_TYPE_BOOL)) {
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(child),
+                                   fl_value_get_bool(active));
     }
   } else if (g_strcmp0(fl_value_get_string(type), "GtkCheckButton") == 0) {
-    FlValue* label = fl_value_lookup_string(args, "label");
-    if (fl_value_is_valid(label, FL_VALUE_TYPE_STRING)) {
-      child = gtk_check_button_new_with_label(fl_value_get_string(label));
-      FlValue* active = fl_value_lookup_string(args, "active");
-      if (fl_value_is_valid(active, FL_VALUE_TYPE_BOOL)) {
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(child),
-                                     fl_value_get_bool(active));
-      }
+    if (!child) {
+      child = gtk_check_button_new();
       g_signal_connect(child, "toggled", G_CALLBACK(button_toggled_cb), self);
     }
+    FlValue* label = fl_value_lookup_string(args, "label");
+    if (fl_value_is_valid(label, FL_VALUE_TYPE_STRING)) {
+      gtk_button_set_label(GTK_BUTTON(child), fl_value_get_string(label));
+    }
+    FlValue* active = fl_value_lookup_string(args, "active");
+    if (fl_value_is_valid(active, FL_VALUE_TYPE_BOOL)) {
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(child),
+                                   fl_value_get_bool(active));
+    }
   } else if (g_strcmp0(fl_value_get_string(type), "GtkEntry") == 0) {
-    child = gtk_entry_new();
+    if (!child) {
+      child = gtk_entry_new();
+      g_signal_connect(child, "activate", G_CALLBACK(entry_activate_cb), self);
+    }
     FlValue* text = fl_value_lookup_string(args, "text");
     if (fl_value_is_valid(text, FL_VALUE_TYPE_STRING)) {
       gtk_entry_set_text(GTK_ENTRY(child), fl_value_get_string(text));
     }
-    g_signal_connect(child, "activate", G_CALLBACK(entry_activate_cb), self);
   }
 
   if (child) {
+    if (!value && fl_value_is_valid(key, FL_VALUE_TYPE_STRING)) {
+      gchar* data = g_strdup(fl_value_get_string(key));
+      g_object_set_data(G_OBJECT(child), "key", data);
+      g_hash_table_insert(self->widgets, data, child);
+    }
+
     g_object_set_data_full(G_OBJECT(child), "packing", g_strdup(packing),
                            (GDestroyNotify)g_free);
     g_object_set_data_full(G_OBJECT(child), "index", g_intdup(index),
                            (GDestroyNotify)g_free);
 
-    widget_properties_set(child, args);
-
-    pack(GTK_HEADER_BAR(header_bar), child);
-
-    FlValue* visible = fl_value_lookup_string(args, "visible");
-    if (fl_value_is_valid(visible, FL_VALUE_TYPE_BOOL)) {
-      gtk_widget_set_visible(child, fl_value_get_bool(visible));
-    } else {
-      gtk_widget_show(child);
+    if (!gtk_widget_get_parent(child)) {
+      pack(GTK_HEADER_BAR(header_bar), child);
     }
+
+    widget_properties_set(child, args);
   }
 }
 
@@ -161,20 +197,26 @@ static void header_bar_pack_all(GtkHeaderBarPlugin* self, FlValue* args,
                                 void (*pack)(GtkHeaderBar*, GtkWidget*)) {
   FlValue* children = fl_value_lookup_string(args, packing);
   if (fl_value_is_valid(children, FL_VALUE_TYPE_LIST)) {
+    self->rebuild = TRUE;
     size_t length = fl_value_get_length(children);
     for (size_t i = 0; i < length; ++i) {
       FlValue* child = fl_value_get_list_value(children, i);
       header_bar_pack(self, packing, i, child, pack);
     }
+    self->rebuild = FALSE;
   }
 }
 
 static void header_bar_set_args(GtkHeaderBarPlugin* self, FlValue* args) {
   GtkWidget* header_bar = header_bar_get(self);
 
-  // ### TODO: don't re-create everything
-  gtk_container_foreach(GTK_CONTAINER(header_bar),
-                        (GtkCallback)gtk_widget_destroy, nullptr);
+  GList* child = gtk_container_get_children(GTK_CONTAINER(header_bar));
+  while (child) {
+    if (!g_object_get_data(G_OBJECT(child->data), "key")) {
+      gtk_widget_destroy(GTK_WIDGET(child->data));
+    }
+    child = child->next;
+  }
 
   FlValue* title = fl_value_lookup_string(args, "title");
   if (fl_value_is_valid(title, FL_VALUE_TYPE_STRING)) {
@@ -225,6 +267,7 @@ static void gtk_header_bar_plugin_dispose(GObject* object) {
   GtkHeaderBarPlugin* self = GTK_HEADER_BAR_PLUGIN(object);
   g_object_unref(self->registrar);
   g_object_unref(self->channel);
+  g_hash_table_unref(self->widgets);
 
   G_OBJECT_CLASS(gtk_header_bar_plugin_parent_class)->dispose(object);
 }
@@ -233,7 +276,10 @@ static void gtk_header_bar_plugin_class_init(GtkHeaderBarPluginClass* klass) {
   G_OBJECT_CLASS(klass)->dispose = gtk_header_bar_plugin_dispose;
 }
 
-static void gtk_header_bar_plugin_init(GtkHeaderBarPlugin* self) {}
+static void gtk_header_bar_plugin_init(GtkHeaderBarPlugin* self) {
+  self->widgets = g_hash_table_new(g_str_hash, g_str_equal);
+  self->rebuild = FALSE;
+}
 
 static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call,
                            gpointer user_data) {
