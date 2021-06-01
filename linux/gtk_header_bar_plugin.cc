@@ -324,7 +324,7 @@ void gtk_header_bar_plugin_register_with_registrar(
     FlPluginRegistrar* registrar) {
   GtkHeaderBarPlugin* plugin = GTK_HEADER_BAR_PLUGIN(
       g_object_new(gtk_header_bar_plugin_get_type(), nullptr));
-  plugin->registrar = g_object_ref(registrar);
+  plugin->registrar = FL_PLUGIN_REGISTRAR(g_object_ref(registrar));
 
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
   plugin->channel =
