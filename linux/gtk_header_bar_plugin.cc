@@ -94,8 +94,7 @@ static GtkWidget* header_bar_get(GtkHeaderBarPlugin* self) {
   return header_bar;
 }
 
-static GtkWidget* widget_create(GtkHeaderBarPlugin* self, const gchar* type,
-                                FlValue* args) {
+static GtkWidget* widget_create(GtkHeaderBarPlugin* self, const gchar* type) {
   GtkWidget* widget = nullptr;
   if (g_strcmp0(type, "GtkButton") == 0) {
     widget = gtk_button_new();
@@ -120,7 +119,21 @@ static GtkWidget* widget_create(GtkHeaderBarPlugin* self, const gchar* type,
   return widget;
 }
 
-static void widget_update(GtkWidget* widget, const gchar* type, FlValue* args) {
+static void widget_init(GtkHeaderBarPlugin* self, GtkWidget* widget) {
+  if (GTK_IS_BUTTON(widget)) {
+    g_signal_connect(widget, "clicked", G_CALLBACK(button_clicked_cb), self);
+  }
+
+  if (GTK_IS_TOGGLE_BUTTON(widget)) {
+    g_signal_connect(widget, "toggled", G_CALLBACK(button_toggled_cb), self);
+  }
+
+  if (GTK_IS_ENTRY(widget)) {
+    g_signal_connect(widget, "activate", G_CALLBACK(entry_activate_cb), self);
+  }
+}
+
+static void widget_update(GtkWidget* widget, FlValue* args) {
   if (GTK_IS_BUTTON(widget)) {
     FlValue* label = fl_value_lookup_string(args, "label");
     if (fl_value_is_valid(label, FL_VALUE_TYPE_STRING)) {
@@ -198,7 +211,8 @@ static void header_bar_pack(GtkHeaderBarPlugin* self, const gchar* packing,
   }
 
   if (!child) {
-    child = widget_create(self, fl_value_get_string(type), args);
+    child = widget_create(self, fl_value_get_string(type));
+    widget_init(self, child);
   }
 
   if (child) {
@@ -217,7 +231,7 @@ static void header_bar_pack(GtkHeaderBarPlugin* self, const gchar* packing,
       pack(GTK_HEADER_BAR(header_bar), child);
     }
 
-    widget_update(child, fl_value_get_string(type), args);
+    widget_update(child, args);
   }
 }
 
@@ -240,14 +254,12 @@ static void header_bar_set_args(GtkHeaderBarPlugin* self, FlValue* args) {
   GtkWidget* header_bar = header_bar_get(self);
 
   GList* children = gtk_container_get_children(GTK_CONTAINER(header_bar));
-  GList* child = children;
-  while (child) {
+  for (GList* child = children; child != nullptr; child = child->next) {
     if (!g_object_get_data(G_OBJECT(child->data), kUniqueKey)) {
       gtk_widget_destroy(GTK_WIDGET(child->data));
     } else {
       gtk_widget_hide(GTK_WIDGET(child->data));
     }
-    child = child->next;
   }
   g_list_free(children);
 
