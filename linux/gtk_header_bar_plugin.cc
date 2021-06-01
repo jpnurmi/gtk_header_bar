@@ -30,6 +30,8 @@ static GtkWidget* window_get(GtkHeaderBarPlugin* self) {
 
 static GtkWidget* header_bar_get(GtkHeaderBarPlugin* self) {
   GtkWidget* window = window_get(self);
+  g_return_val_if_fail(window, nullptr);
+
   GtkWidget* header_bar = gtk_window_get_titlebar(GTK_WINDOW(window));
   if (!header_bar) {
     header_bar = gtk_header_bar_new();
@@ -218,6 +220,7 @@ static void header_bar_pack_all(GtkHeaderBarPlugin* self, FlValue* children,
                                 void (*header_bar_pack)(GtkHeaderBar*,
                                                         GtkWidget*)) {
   GtkWidget* header_bar = header_bar_get(self);
+  g_return_if_fail(header_bar);
 
   self->rebuild = TRUE;
   size_t length = fl_value_get_length(children);
@@ -234,6 +237,7 @@ static void header_bar_pack_all(GtkHeaderBarPlugin* self, FlValue* children,
 
 static void header_bar_set_args(GtkHeaderBarPlugin* self, FlValue* args) {
   GtkWidget* header_bar = header_bar_get(self);
+  g_return_if_fail(header_bar);
 
   GList* children = gtk_container_get_children(GTK_CONTAINER(header_bar));
   for (GList* child = children; child != nullptr; child = child->next) {
