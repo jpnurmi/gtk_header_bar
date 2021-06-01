@@ -306,7 +306,20 @@ static void gtk_header_bar_plugin_dispose(GObject* object) {
   G_OBJECT_CLASS(gtk_header_bar_plugin_parent_class)->dispose(object);
 }
 
+static void init_gtk_types() {
+  g_type_ensure(GTK_TYPE_BUTTON);
+  g_type_ensure(GTK_TYPE_CHECK_BUTTON);
+  g_type_ensure(GTK_TYPE_CONTAINER);
+  g_type_ensure(GTK_TYPE_ENTRY);
+  g_type_ensure(GTK_TYPE_HEADER_BAR);
+  g_type_ensure(GTK_TYPE_MENU);
+  g_type_ensure(GTK_TYPE_MENU_BUTTON);
+  g_type_ensure(GTK_TYPE_MENU_ITEM);
+  g_type_ensure(GTK_TYPE_TOGGLE_BUTTON);
+}
+
 static void gtk_header_bar_plugin_class_init(GtkHeaderBarPluginClass* klass) {
+  init_gtk_types();
   G_OBJECT_CLASS(klass)->dispose = gtk_header_bar_plugin_dispose;
 }
 
