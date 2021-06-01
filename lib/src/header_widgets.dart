@@ -127,7 +127,6 @@ class GtkMenu extends GtkWidget {
     Key? key,
     bool? visible,
     bool? sensitive,
-    this.title,
     this.items,
   }) : super(
           key: key,
@@ -135,14 +134,12 @@ class GtkMenu extends GtkWidget {
           sensitive: sensitive,
         );
 
-  final String? title;
   final List<GtkWidget>? items;
 
   @override
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       ...super.toJson(),
-      'title': title,
       'items': items?.map((item) => item.toJson()).toList(),
     };
   }

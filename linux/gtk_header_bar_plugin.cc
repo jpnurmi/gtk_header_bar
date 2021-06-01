@@ -144,10 +144,7 @@ static void widget_update(GtkWidget* widget, const gchar* type, FlValue* args) {
   }
 
   if (GTK_IS_MENU(widget)) {
-    FlValue* title = fl_value_lookup_string(args, "title");
-    if (fl_value_is_valid(title, FL_VALUE_TYPE_STRING)) {
-      gtk_menu_set_title(GTK_MENU(widget), fl_value_get_string(title));
-    }
+    // ...
   }
 
   if (GTK_IS_MENU_ITEM(widget)) {
