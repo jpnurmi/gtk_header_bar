@@ -50,11 +50,12 @@ class _GtkHeaderBarState extends State<GtkHeaderBar> {
   void initState() {
     super.initState();
     _channel.setMethodCallHandler((call) async {
-      final packing = call.arguments.first as String;
-      final index = call.arguments[1] as int;
-      final child = packing == 'start'
-          ? widget.start?.getOrNull(index)
-          : widget.end?.getOrNull(index);
+      final children = <GtkWidget>[
+        ...?widget.start,
+        ...?widget.end,
+      ];
+      final position = call.arguments.first as int;
+      final child = children.getOrNull(position);
 
       switch (call.method) {
         case 'buttonClicked':
