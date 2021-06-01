@@ -3,6 +3,10 @@
 #include <flutter_linux/flutter_linux.h>
 #include <gtk/gtk.h>
 
+static const gchar* kUniqueKey = "_key";
+static const gchar* kPackingKey = "_packing";
+static const gchar* kIndexKey = "_index";
+
 #define GTK_HEADER_BAR_PLUGIN(obj)                                     \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), gtk_header_bar_plugin_get_type(), \
                               GtkHeaderBarPlugin))
@@ -31,8 +35,8 @@ static void button_clicked_cb(GtkButton* button, GtkHeaderBarPlugin* plugin) {
   if (plugin->rebuild) return;
 
   const gchar* packing =
-      (const gchar*)g_object_get_data(G_OBJECT(button), "packing");
-  gint* index = (gint*)g_object_get_data(G_OBJECT(button), "index");
+      (const gchar*)g_object_get_data(G_OBJECT(button), kPackingKey);
+  gint* index = (gint*)g_object_get_data(G_OBJECT(button), kIndexKey);
 
   FlValue* args = fl_value_new_list();
   fl_value_append_take(args, fl_value_new_string(packing));
@@ -47,8 +51,8 @@ static void button_toggled_cb(GtkToggleButton* button,
   if (plugin->rebuild) return;
 
   const gchar* packing =
-      (const gchar*)g_object_get_data(G_OBJECT(button), "packing");
-  gint* index = (gint*)g_object_get_data(G_OBJECT(button), "index");
+      (const gchar*)g_object_get_data(G_OBJECT(button), kPackingKey);
+  gint* index = (gint*)g_object_get_data(G_OBJECT(button), kIndexKey);
   gboolean active = gtk_toggle_button_get_active(button);
 
   FlValue* args = fl_value_new_list();
@@ -64,8 +68,8 @@ static void entry_activate_cb(GtkEntry* entry, GtkHeaderBarPlugin* plugin) {
   if (plugin->rebuild) return;
 
   const gchar* packing =
-      (const gchar*)g_object_get_data(G_OBJECT(entry), "packing");
-  gint* index = (gint*)g_object_get_data(G_OBJECT(entry), "index");
+      (const gchar*)g_object_get_data(G_OBJECT(entry), kPackingKey);
+  gint* index = (gint*)g_object_get_data(G_OBJECT(entry), kIndexKey);
   const gchar* text = gtk_entry_get_text(entry);
 
   FlValue* args = fl_value_new_list();
@@ -187,7 +191,7 @@ static void header_bar_pack(GtkHeaderBarPlugin* self, const gchar* packing,
   GtkWidget* child = nullptr;
   GtkWidget* header_bar = header_bar_get(self);
 
-  FlValue* key = fl_value_lookup_string(args, "key");
+  FlValue* key = fl_value_lookup_string(args, kUniqueKey);
   gpointer value = nullptr;
   if (fl_value_is_valid(key, FL_VALUE_TYPE_STRING)) {
     value = g_hash_table_lookup(self->widgets, fl_value_get_string(key));
@@ -203,13 +207,13 @@ static void header_bar_pack(GtkHeaderBarPlugin* self, const gchar* packing,
   if (child) {
     if (!value && fl_value_is_valid(key, FL_VALUE_TYPE_STRING)) {
       gchar* data = g_strdup(fl_value_get_string(key));
-      g_object_set_data(G_OBJECT(child), "key", data);
+      g_object_set_data(G_OBJECT(child), kUniqueKey, data);
       g_hash_table_insert(self->widgets, data, child);
     }
 
-    g_object_set_data_full(G_OBJECT(child), "packing", g_strdup(packing),
+    g_object_set_data_full(G_OBJECT(child), kPackingKey, g_strdup(packing),
                            (GDestroyNotify)g_free);
-    g_object_set_data_full(G_OBJECT(child), "index", g_intdup(index),
+    g_object_set_data_full(G_OBJECT(child), kIndexKey, g_intdup(index),
                            (GDestroyNotify)g_free);
 
     if (!gtk_widget_get_parent(child)) {
@@ -241,7 +245,7 @@ static void header_bar_set_args(GtkHeaderBarPlugin* self, FlValue* args) {
   GList* children = gtk_container_get_children(GTK_CONTAINER(header_bar));
   GList* child = children;
   while (child) {
-    if (!g_object_get_data(G_OBJECT(child->data), "key")) {
+    if (!g_object_get_data(G_OBJECT(child->data), kUniqueKey)) {
       gtk_widget_destroy(GTK_WIDGET(child->data));
     } else {
       gtk_widget_hide(GTK_WIDGET(child->data));
