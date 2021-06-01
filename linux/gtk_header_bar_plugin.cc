@@ -100,24 +100,14 @@ static void entry_activate_cb(GtkEntry* entry, GtkHeaderBarPlugin* plugin) {
                                   nullptr, nullptr, nullptr);
 }
 
-static GtkWidget* widget_create(GtkHeaderBarPlugin* self, const gchar* type) {
-  GtkWidget* widget = nullptr;
-  if (g_strcmp0(type, "GtkButton") == 0) {
-    widget = gtk_button_new();
-  } else if (g_strcmp0(type, "GtkToggleButton") == 0) {
-    widget = gtk_toggle_button_new();
-  } else if (g_strcmp0(type, "GtkCheckButton") == 0) {
-    widget = gtk_check_button_new();
-  } else if (g_strcmp0(type, "GtkMenuButton") == 0) {
-    widget = gtk_menu_button_new();
-  } else if (g_strcmp0(type, "GtkMenu") == 0) {
-    widget = gtk_menu_new();
-  } else if (g_strcmp0(type, "GtkMenuItem") == 0) {
-    widget = gtk_menu_item_new();
-  } else if (g_strcmp0(type, "GtkEntry") == 0) {
-    widget = gtk_entry_new();
-  }
-  return widget;
+static GtkWidget* widget_create(GtkHeaderBarPlugin* self, FlValue* args) {
+  FlValue* value = fl_value_lookup_string(args, "type");
+  g_return_val_if_fail(fl_value_is_valid(value, FL_VALUE_TYPE_STRING), nullptr);
+
+  const gchar* name = fl_value_get_string(value);
+  GType type = g_type_from_name(name);
+  g_return_val_if_fail(g_type_is_a(type, GTK_TYPE_WIDGET), nullptr);
+  return gtk_widget_new(type, nullptr);
 }
 
 static void widget_init(GtkHeaderBarPlugin* self, GtkWidget* widget) {
@@ -217,17 +207,10 @@ static void widget_cache_insert(GtkHeaderBarPlugin* self, GtkWidget* widget,
 static GtkWidget* widget_get(GtkHeaderBarPlugin* self, FlValue* args) {
   GtkWidget* widget = widget_cache_lookup(self, args);
   if (!widget) {
-    FlValue* type = fl_value_lookup_string(args, "type");
-    if (!fl_value_is_valid(type, FL_VALUE_TYPE_STRING)) {
-      return nullptr;
-    }
-
-    widget = widget_create(self, fl_value_get_string(type));
+    widget = widget_create(self, args);
     widget_init(self, widget);
-
     widget_cache_insert(self, widget, args);
   }
-
   return widget;
 }
 
