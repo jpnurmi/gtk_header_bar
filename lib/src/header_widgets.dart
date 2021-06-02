@@ -125,7 +125,7 @@ class GtkMenuButton extends GtkToggleButton {
 class GtkMenu extends GtkWidget {
   const GtkMenu({
     Key? key,
-    bool? visible,
+    bool? visible = false,
     bool? sensitive,
     this.items,
   }) : super(
