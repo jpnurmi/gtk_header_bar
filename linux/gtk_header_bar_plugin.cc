@@ -3,7 +3,7 @@
 #include <flutter_linux/flutter_linux.h>
 #include <gtk/gtk.h>
 
-static const gchar* kUniqueKey = "_key";
+static const gchar* kUniqueKey = "key";
 
 #define GTK_HEADER_BAR_PLUGIN(obj)                                     \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), gtk_header_bar_plugin_get_type(), \
@@ -155,7 +155,6 @@ static void widget_init(GtkHeaderBarPlugin* self, GtkWidget* widget,
     if (fl_value_is_valid(popup_args, FL_VALUE_TYPE_MAP)) {
       GtkWidget* popup = widget_get(self, popup_args);
       gtk_menu_button_set_popup(GTK_MENU_BUTTON(widget), popup);
-      widget_init(self, popup, popup_args);
     }
   }
 
@@ -167,7 +166,6 @@ static void widget_init(GtkHeaderBarPlugin* self, GtkWidget* widget,
         FlValue* item_args = fl_value_get_list_value(items, i);
         GtkWidget* menu_item = widget_get(self, item_args);
         gtk_menu_shell_append(GTK_MENU_SHELL(widget), menu_item);
-        widget_init(self, menu_item, item_args);
       }
     }
   }
@@ -263,7 +261,6 @@ static void widget_cache_insert(GtkHeaderBarPlugin* self, GtkWidget* widget,
   FlValue* key = fl_value_lookup_string(args, kUniqueKey);
   if (fl_value_is_valid(key, FL_VALUE_TYPE_STRING)) {
     gchar* data = g_strdup(fl_value_get_string(key));
-    g_object_set_data(G_OBJECT(widget), kUniqueKey, data);
     g_hash_table_insert(self->widgets, data, widget);
   }
 }
