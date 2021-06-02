@@ -102,15 +102,23 @@ static void entry_activate_cb(GtkEntry* entry, GtkHeaderBarPlugin* plugin) {
                                   nullptr, nullptr, nullptr);
 }
 
-static void menu_item_activate_cb(GtkEntry* entry, GtkHeaderBarPlugin* plugin) {
+static void menu_item_activate_cb(GtkMenuItem* menu_item,
+                                  GtkHeaderBarPlugin* plugin) {
   if (plugin->rebuild) return;
 
   GtkWidget* header_bar = header_bar_get(plugin);
+  GtkWidget* menu = gtk_widget_get_parent(GTK_WIDGET(menu_item));
+  GtkWidget* button = gtk_menu_get_attach_widget(GTK_MENU(menu));
   gint position = container_get_child_position(GTK_CONTAINER(header_bar),
-                                               GTK_WIDGET(entry));
+                                               GTK_WIDGET(button));
+
+  GList* children = gtk_container_get_children(GTK_CONTAINER(menu));
+  gint index = g_list_index(children, GTK_WIDGET(menu_item));
+  g_list_free(children);
 
   FlValue* args = fl_value_new_list();
   fl_value_append_take(args, fl_value_new_int(position));
+  fl_value_append_take(args, fl_value_new_int(index));
 
   fl_method_channel_invoke_method(plugin->channel, "menuItemActivate", args,
                                   nullptr, nullptr, nullptr);
