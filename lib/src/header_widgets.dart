@@ -149,6 +149,7 @@ class GtkMenuItem extends GtkWidget {
     bool? visible,
     bool? sensitive,
     this.label,
+    this.submenu,
     this.onActivate,
   }) : super(
           visible: visible,
@@ -156,6 +157,7 @@ class GtkMenuItem extends GtkWidget {
         );
 
   final String? label;
+  final GtkWidget? submenu;
   final VoidCallback? onActivate;
 
   @override
@@ -163,6 +165,7 @@ class GtkMenuItem extends GtkWidget {
     return <String, dynamic>{
       ...super.toJson(),
       'label': label,
+      'submenu': submenu?.toJson(),
     };
   }
 }

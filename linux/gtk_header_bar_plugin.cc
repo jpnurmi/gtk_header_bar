@@ -200,6 +200,15 @@ static void widget_init(GtkHeaderBarPlugin* self, GtkWidget* widget,
   }
 
   if (GTK_IS_MENU_ITEM(widget)) {
+    FlValue* submenu_args = fl_value_lookup_string(args, "submenu");
+    if (fl_value_is_valid(submenu_args, FL_VALUE_TYPE_MAP)) {
+      GtkWidget* submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget));
+      if (!submenu) {
+        submenu = widget_create(self, submenu_args);
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(widget), submenu);
+      }
+    }
+
     g_signal_connect(widget, "activate", G_CALLBACK(menu_item_activate_cb),
                      self);
   }
@@ -270,6 +279,12 @@ static void widget_update(GtkHeaderBarPlugin* self, GtkWidget* widget,
     if (fl_value_is_valid(label, FL_VALUE_TYPE_STRING)) {
       gtk_menu_item_set_label(GTK_MENU_ITEM(widget),
                               fl_value_get_string(label));
+    }
+
+    FlValue* submenu_args = fl_value_lookup_string(args, "submenu");
+    if (fl_value_is_valid(submenu_args, FL_VALUE_TYPE_MAP)) {
+      GtkWidget* submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget));
+      widget_update(self, submenu, submenu_args);
     }
   }
 

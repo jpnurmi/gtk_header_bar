@@ -25,10 +25,6 @@ class _MyAppState extends State<MyApp> {
           label: 'button $counter',
           onClicked: () => print('click $counter'),
         ),
-        GtkButton(
-          label: 'button 2',
-          onClicked: () => print('click 2'),
-        ),
         GtkMenuButton(
           label: 'menu',
           popup: GtkMenu(
@@ -38,6 +34,18 @@ class _MyAppState extends State<MyApp> {
                   label: 'item $i',
                   onActivate: () => print('activate: $i'),
                 ),
+              GtkMenuItem(
+                label: 'submenu',
+                submenu: GtkMenu(
+                  children: <GtkMenuItem>[
+                    for (var i = 0; i < 3; ++i)
+                      GtkMenuItem(
+                        label: 'subitem $i',
+                        onActivate: () => print('sub-activate: $i'),
+                      ),
+                  ],
+                ),
+              )
             ],
           ),
         ),
