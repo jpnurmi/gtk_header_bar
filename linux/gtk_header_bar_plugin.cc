@@ -33,7 +33,7 @@ static GtkWidget* header_bar_get(GtkHeaderBarPlugin* self) {
   g_return_val_if_fail(window, nullptr);
 
   GtkWidget* header_bar = gtk_window_get_titlebar(GTK_WINDOW(window));
-  if (!header_bar) {
+  if (!GTK_IS_HEADER_BAR(header_bar)) {
     header_bar = gtk_header_bar_new();
     gtk_window_set_titlebar(GTK_WINDOW(window), header_bar);
   }
@@ -275,7 +275,7 @@ static void widget_cache_insert(GtkHeaderBarPlugin* self, GtkWidget* widget,
 
 static GtkWidget* widget_get(GtkHeaderBarPlugin* self, FlValue* args) {
   GtkWidget* widget = widget_cache_lookup(self, args);
-  if (!widget) {
+  if (!GTK_IS_WIDGET(widget)) {
     widget = widget_create(self, args);
     widget_init(self, widget, args);
     widget_cache_insert(self, widget, args);
