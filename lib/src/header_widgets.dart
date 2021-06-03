@@ -122,27 +122,41 @@ class GtkMenuButton extends GtkToggleButton {
   }
 }
 
-class GtkMenu extends GtkWidget {
-  const GtkMenu({
+abstract class GtkContainer extends GtkWidget {
+  const GtkContainer({
     Key? key,
     bool? visible = false,
     bool? sensitive,
-    this.items,
+    this.children,
   }) : super(
           key: key,
           visible: visible,
           sensitive: sensitive,
         );
 
-  final List<GtkWidget>? items;
+  final List<GtkWidget>? children;
 
   @override
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       ...super.toJson(),
-      'items': items?.map((item) => item.toJson()).toList(),
+      'children': children?.map((item) => item.toJson()).toList(),
     };
   }
+}
+
+class GtkMenu extends GtkContainer {
+  const GtkMenu({
+    Key? key,
+    bool? visible = false,
+    bool? sensitive,
+    List<GtkWidget>? children,
+  }) : super(
+          key: key,
+          visible: visible,
+          sensitive: sensitive,
+          children: children,
+        );
 }
 
 class GtkMenuItem extends GtkWidget {

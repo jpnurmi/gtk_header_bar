@@ -36,7 +36,7 @@ class _MyAppState extends State<MyApp> {
           key: const ValueKey('menu_button'),
           popup: GtkMenu(
             key: const ValueKey('menu'),
-            items: <GtkMenuItem>[
+            children: <GtkMenuItem>[
               for (var i = 0; i < 3; ++i)
                 GtkMenuItem(
                   label: 'item $i',

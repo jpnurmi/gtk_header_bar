@@ -72,7 +72,7 @@ class _GtkHeaderBarState extends State<GtkHeaderBar> {
         case 'menuItemActivate':
           final index = call.arguments.last as int;
           final popup = (child as GtkMenuButton).popup;
-          final item = (popup as GtkMenu?)?.items?[index];
+          final item = (popup as GtkMenu?)?.children?[index];
           (item as GtkMenuItem).onActivate?.call();
           break;
         default:
