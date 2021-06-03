@@ -32,6 +32,7 @@ class GtkHeaderBar extends StatefulWidget {
 class _GtkHeaderBarState extends State<GtkHeaderBar> {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
+      'type': widget.runtimeType.toString(),
       'title': widget.title,
       'subtitle': widget.subtitle,
       'showCloseButton': widget.showCloseButton,

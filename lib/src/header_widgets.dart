@@ -4,19 +4,16 @@ import 'package:flutter/foundation.dart';
 
 class GtkWidget {
   const GtkWidget({
-    this.key,
     this.visible,
     this.sensitive,
   });
 
-  final Key? key;
   final bool? visible;
   final bool? sensitive;
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'type': runtimeType.toString(),
-      'key': key?.toString(),
       'visible': visible,
       'sensitive': sensitive,
     };
@@ -25,13 +22,11 @@ class GtkWidget {
 
 class GtkButton extends GtkWidget {
   const GtkButton({
-    Key? key,
     bool? visible,
     bool? sensitive,
     this.label,
     this.onClicked,
   }) : super(
-          key: key,
           visible: visible,
           sensitive: sensitive,
         );
@@ -50,14 +45,12 @@ class GtkButton extends GtkWidget {
 
 class GtkToggleButton extends GtkButton {
   const GtkToggleButton({
-    Key? key,
     bool? visible,
     bool? sensitive,
     String? label,
     this.active,
     this.onToggled,
   }) : super(
-          key: key,
           visible: visible,
           sensitive: sensitive,
           label: label,
@@ -77,14 +70,12 @@ class GtkToggleButton extends GtkButton {
 
 class GtkCheckButton extends GtkToggleButton {
   const GtkCheckButton({
-    Key? key,
     bool? visible,
     bool? sensitive,
     String? label,
     bool? active,
     ValueChanged<bool>? onToggled,
   }) : super(
-          key: key,
           visible: visible,
           sensitive: sensitive,
           label: label,
@@ -95,7 +86,6 @@ class GtkCheckButton extends GtkToggleButton {
 
 class GtkMenuButton extends GtkToggleButton {
   const GtkMenuButton({
-    Key? key,
     bool? visible,
     bool? sensitive,
     String? label,
@@ -103,7 +93,6 @@ class GtkMenuButton extends GtkToggleButton {
     ValueChanged<bool>? onToggled,
     this.popup,
   }) : super(
-          key: key,
           visible: visible,
           sensitive: sensitive,
           label: label,
@@ -124,12 +113,10 @@ class GtkMenuButton extends GtkToggleButton {
 
 abstract class GtkContainer extends GtkWidget {
   const GtkContainer({
-    Key? key,
     bool? visible = false,
     bool? sensitive,
     this.children,
   }) : super(
-          key: key,
           visible: visible,
           sensitive: sensitive,
         );
@@ -147,12 +134,10 @@ abstract class GtkContainer extends GtkWidget {
 
 class GtkMenu extends GtkContainer {
   const GtkMenu({
-    Key? key,
     bool? visible = false,
     bool? sensitive,
     List<GtkWidget>? children,
   }) : super(
-          key: key,
           visible: visible,
           sensitive: sensitive,
           children: children,
@@ -161,13 +146,11 @@ class GtkMenu extends GtkContainer {
 
 class GtkMenuItem extends GtkWidget {
   const GtkMenuItem({
-    Key? key,
     bool? visible,
     bool? sensitive,
     this.label,
     this.onActivate,
   }) : super(
-          key: key,
           visible: visible,
           sensitive: sensitive,
         );
@@ -186,13 +169,11 @@ class GtkMenuItem extends GtkWidget {
 
 class GtkEntry extends GtkWidget {
   const GtkEntry({
-    Key? key,
     bool? visible,
     bool? sensitive,
     this.text,
     this.onActivate,
   }) : super(
-          key: key,
           visible: visible,
           sensitive: sensitive,
         );

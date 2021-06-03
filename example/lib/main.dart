@@ -23,24 +23,19 @@ class _MyAppState extends State<MyApp> {
       start: <GtkWidget>[
         GtkButton(
           label: 'button $counter',
-          key: const ValueKey('button1'),
           onClicked: () => print('click $counter'),
         ),
         GtkButton(
           label: 'button 2',
-          key: const ValueKey('button2'),
           onClicked: () => print('click 2'),
         ),
         GtkMenuButton(
           label: 'menu',
-          key: const ValueKey('menu_button'),
           popup: GtkMenu(
-            key: const ValueKey('menu'),
             children: <GtkMenuItem>[
               for (var i = 0; i < 3; ++i)
                 GtkMenuItem(
                   label: 'item $i',
-                  key: ValueKey('menu_item$i'),
                   onActivate: () => print('activate: $i'),
                 ),
             ],
@@ -48,7 +43,6 @@ class _MyAppState extends State<MyApp> {
         ),
         GtkToggleButton(
           label: 'toggle',
-          key: const ValueKey('button3'),
           sensitive: counter % 2 == 0,
           onToggled: (value) => print('toggle: $value'),
         ),
@@ -56,14 +50,12 @@ class _MyAppState extends State<MyApp> {
       end: <GtkWidget>[
         GtkCheckButton(
           label: 'check',
-          key: const ValueKey('button4'),
           active: true,
           visible: counter % 2 == 1,
           onToggled: (value) => print('check: $value'),
         ),
         GtkEntry(
           text: 'entry',
-          //key: const ValueKey('entry'),
           onActivate: (value) => print('entry: $value'),
         ),
       ],
