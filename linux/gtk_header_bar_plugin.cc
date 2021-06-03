@@ -302,7 +302,7 @@ static void header_bar_pack_all(GtkHeaderBarPlugin* self, FlValue* children,
   self->rebuild = FALSE;
 }
 
-static void header_bar_set_args(GtkHeaderBarPlugin* self, FlValue* args) {
+static void header_bar_update(GtkHeaderBarPlugin* self, FlValue* args) {
   GtkWidget* header_bar = header_bar_get(self);
   g_return_if_fail(header_bar);
 
@@ -358,8 +358,8 @@ static void gtk_header_bar_plugin_handle_method_call(
   const gchar* method = fl_method_call_get_name(method_call);
   FlValue* args = fl_method_call_get_args(method_call);
 
-  if (strcmp(method, "setHeaderBar") == 0) {
-    header_bar_set_args(self, args);
+  if (strcmp(method, "updateHeaderBar") == 0) {
+    header_bar_update(self, args);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(nullptr));
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());

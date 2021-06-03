@@ -79,13 +79,19 @@ class _GtkHeaderBarState extends State<GtkHeaderBar> {
           throw UnimplementedError(call.method);
       }
     });
-    _channel.invokeMethod<void>('setHeaderBar', toJson());
+    _channel.invokeMethod<void>('updateHeaderBar', toJson());
   }
 
   @override
   void didUpdateWidget(GtkHeaderBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _channel.invokeMethod<void>('setHeaderBar', toJson());
+    _channel.invokeMethod<void>('updateHeaderBar', toJson());
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _channel.invokeMethod<void>('updateHeaderBar');
   }
 }
 
