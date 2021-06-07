@@ -37,30 +37,52 @@ static GtkWidget* header_bar_get(GtkHeaderBarPlugin* self) {
   return header_bar;
 }
 
-static gint container_get_child_position(GtkContainer* container,
-                                         GtkWidget* child) {
-  GValue value = G_VALUE_INIT;
-  g_value_init(&value, G_TYPE_INT);
-  gtk_container_child_get_property(container, child, "position", &value);
-  return g_value_get_int(&value);
+static gint container_child_get_index(GtkContainer* container,
+                                      GtkWidget* child) {
+  // ### TODO: g_object_get/set_data()?
+  GList* children = gtk_container_get_children(container);
+  gint index = g_list_index(children, child);
+  g_list_free(children);
+  return index;
 }
 
-// static void container_set_child_position(GtkContainer* container,
-//                                          GtkWidget* child, gint position) {
-//   GValue value = G_VALUE_INIT;
-//   g_value_set_int(&value, position);
-//   gtk_container_child_set_property(container, child, "position", &value);
-// }
+static void widget_fill_path(GtkHeaderBarPlugin* self, GtkWidget* widget,
+                             FlValue* path) {
+  GtkWidget* header_bar = header_bar_get(self);
+  if (!widget || widget == header_bar) return;
+
+  GtkWidget* parent = gtk_widget_get_parent(widget);
+  if (GTK_IS_MENU(widget)) {
+    GtkWidget* attach_widget = gtk_menu_get_attach_widget(GTK_MENU(widget));
+    if (attach_widget) {
+      widget_fill_path(self, attach_widget, path);
+    }
+  } else if (parent) {
+    widget_fill_path(self, parent, path);
+  }
+
+  FlValue* args = fl_value_new_map();
+  fl_value_set_string_take(args, "type",
+                           fl_value_new_string(G_OBJECT_TYPE_NAME(widget)));
+  if (GTK_IS_CONTAINER(parent)) {
+    gint index = container_child_get_index(GTK_CONTAINER(parent), widget);
+    fl_value_set_string_take(args, "index", fl_value_new_int(index));
+  }
+  fl_value_append_take(path, args);
+}
+
+static FlValue* widget_get_path(GtkHeaderBarPlugin* self, GtkWidget* widget) {
+  FlValue* path = fl_value_new_list();
+  widget_fill_path(self, widget, path);
+  return path;
+}
 
 static void button_clicked_cb(GtkButton* button, GtkHeaderBarPlugin* plugin) {
   if (plugin->rebuild) return;
 
-  GtkWidget* header_bar = header_bar_get(plugin);
-  gint position = container_get_child_position(GTK_CONTAINER(header_bar),
-                                               GTK_WIDGET(button));
-
-  FlValue* args = fl_value_new_list();
-  fl_value_append_take(args, fl_value_new_int(position));
+  FlValue* args = fl_value_new_map();
+  fl_value_set_string_take(args, "path",
+                           widget_get_path(plugin, GTK_WIDGET(button)));
 
   fl_method_channel_invoke_method(plugin->channel, "buttonClicked", args,
                                   nullptr, nullptr, nullptr);
@@ -70,14 +92,12 @@ static void button_toggled_cb(GtkToggleButton* button,
                               GtkHeaderBarPlugin* plugin) {
   if (plugin->rebuild) return;
 
-  GtkWidget* header_bar = header_bar_get(plugin);
-  gint position = container_get_child_position(GTK_CONTAINER(header_bar),
-                                               GTK_WIDGET(button));
   gboolean active = gtk_toggle_button_get_active(button);
 
-  FlValue* args = fl_value_new_list();
-  fl_value_append_take(args, fl_value_new_int(position));
-  fl_value_append_take(args, fl_value_new_bool(active));
+  FlValue* args = fl_value_new_map();
+  fl_value_set_string_take(args, "active", fl_value_new_bool(active));
+  fl_value_set_string_take(args, "path",
+                           widget_get_path(plugin, GTK_WIDGET(button)));
 
   fl_method_channel_invoke_method(plugin->channel, "buttonToggled", args,
                                   nullptr, nullptr, nullptr);
@@ -86,14 +106,12 @@ static void button_toggled_cb(GtkToggleButton* button,
 static void entry_activate_cb(GtkEntry* entry, GtkHeaderBarPlugin* plugin) {
   if (plugin->rebuild) return;
 
-  GtkWidget* header_bar = header_bar_get(plugin);
-  gint position = container_get_child_position(GTK_CONTAINER(header_bar),
-                                               GTK_WIDGET(entry));
   const gchar* text = gtk_entry_get_text(entry);
 
-  FlValue* args = fl_value_new_list();
-  fl_value_append_take(args, fl_value_new_int(position));
-  fl_value_append_take(args, fl_value_new_string(text));
+  FlValue* args = fl_value_new_map();
+  fl_value_set_string_take(args, "text", fl_value_new_string(text));
+  fl_value_set_string_take(args, "path",
+                           widget_get_path(plugin, GTK_WIDGET(entry)));
 
   fl_method_channel_invoke_method(plugin->channel, "entryActivate", args,
                                   nullptr, nullptr, nullptr);
@@ -103,19 +121,9 @@ static void menu_item_activate_cb(GtkMenuItem* menu_item,
                                   GtkHeaderBarPlugin* plugin) {
   if (plugin->rebuild) return;
 
-  GtkWidget* header_bar = header_bar_get(plugin);
-  GtkWidget* menu = gtk_widget_get_parent(GTK_WIDGET(menu_item));
-  GtkWidget* button = gtk_menu_get_attach_widget(GTK_MENU(menu));
-  gint position = container_get_child_position(GTK_CONTAINER(header_bar),
-                                               GTK_WIDGET(button));
-
-  GList* children = gtk_container_get_children(GTK_CONTAINER(menu));
-  gint index = g_list_index(children, GTK_WIDGET(menu_item));
-  g_list_free(children);
-
-  FlValue* args = fl_value_new_list();
-  fl_value_append_take(args, fl_value_new_int(position));
-  fl_value_append_take(args, fl_value_new_int(index));
+  FlValue* args = fl_value_new_map();
+  fl_value_set_string_take(args, "path",
+                           widget_get_path(plugin, GTK_WIDGET(menu_item)));
 
   fl_method_channel_invoke_method(plugin->channel, "menuItemActivate", args,
                                   nullptr, nullptr, nullptr);

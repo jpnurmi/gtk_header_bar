@@ -15,6 +15,21 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   var counter = 0;
 
+  List<GtkMenuItem> _buildMenuItems(int k) {
+    return <GtkMenuItem>[
+      for (var i = 0; i < 3; ++i)
+        GtkMenuItem(
+          label: 'item$k: $i',
+          onActivate: () => print('item$k: $i'),
+        ),
+      if (k > 0)
+        GtkMenuItem(
+          label: 'menu$k',
+          submenu: GtkMenu(children: _buildMenuItems(k - 1)),
+        ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return GtkHeaderBar(
@@ -28,25 +43,7 @@ class _MyAppState extends State<MyApp> {
         GtkMenuButton(
           label: 'menu',
           popup: GtkMenu(
-            children: <GtkMenuItem>[
-              for (var i = 0; i < 3; ++i)
-                GtkMenuItem(
-                  label: 'item $i',
-                  onActivate: () => print('activate: $i'),
-                ),
-              GtkMenuItem(
-                label: 'submenu',
-                submenu: GtkMenu(
-                  children: <GtkMenuItem>[
-                    for (var i = 0; i < 3; ++i)
-                      GtkMenuItem(
-                        label: 'subitem $i',
-                        onActivate: () => print('sub-activate: $i'),
-                      ),
-                  ],
-                ),
-              )
-            ],
+            children: _buildMenuItems(3),
           ),
         ),
         GtkToggleButton(
