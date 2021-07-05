@@ -274,6 +274,65 @@ static void widget_update(GtkHeaderBarPlugin* self, GtkWidget* widget,
     }
   }
 
+  if (GTK_IS_TOOL_ITEM(widget)) {
+    FlValue* homogeneous = fl_value_lookup_string(args, "homogeneous");
+    if (fl_value_is_valid(homogeneous, FL_VALUE_TYPE_BOOL)) {
+      gtk_tool_item_set_homogeneous(GTK_TOOL_ITEM(widget),
+                                    fl_value_get_bool(homogeneous));
+    }
+
+    FlValue* expand = fl_value_lookup_string(args, "expand");
+    if (fl_value_is_valid(expand, FL_VALUE_TYPE_BOOL)) {
+      gtk_tool_item_set_expand(GTK_TOOL_ITEM(widget),
+                               fl_value_get_bool(expand));
+    }
+
+    FlValue* tooltip_text = fl_value_lookup_string(args, "tooltipText");
+    if (fl_value_is_valid(tooltip_text, FL_VALUE_TYPE_STRING)) {
+      gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(widget),
+                                     fl_value_get_string(tooltip_text));
+    }
+
+    FlValue* tooltip_markup = fl_value_lookup_string(args, "tooltipMarkup");
+    if (fl_value_is_valid(tooltip_markup, FL_VALUE_TYPE_STRING)) {
+      gtk_tool_item_set_tooltip_markup(GTK_TOOL_ITEM(widget),
+                                       fl_value_get_string(tooltip_markup));
+    }
+
+    FlValue* use_drag_window = fl_value_lookup_string(args, "useDragWindow");
+    if (fl_value_is_valid(use_drag_window, FL_VALUE_TYPE_BOOL)) {
+      gtk_tool_item_set_use_drag_window(GTK_TOOL_ITEM(widget),
+                                        fl_value_get_bool(use_drag_window));
+    }
+
+    FlValue* visible_horizontal =
+        fl_value_lookup_string(args, "visibleHorizontal");
+    if (fl_value_is_valid(visible_horizontal, FL_VALUE_TYPE_BOOL)) {
+      gtk_tool_item_set_visible_horizontal(
+          GTK_TOOL_ITEM(widget), fl_value_get_bool(visible_horizontal));
+    }
+
+    FlValue* visible_vertical = fl_value_lookup_string(args, "visibleVertical");
+    if (fl_value_is_valid(visible_vertical, FL_VALUE_TYPE_BOOL)) {
+      gtk_tool_item_set_visible_vertical(GTK_TOOL_ITEM(widget),
+                                         fl_value_get_bool(visible_vertical));
+    }
+
+    FlValue* is_important = fl_value_lookup_string(args, "isImportant");
+    if (fl_value_is_valid(is_important, FL_VALUE_TYPE_BOOL)) {
+      gtk_tool_item_set_is_important(GTK_TOOL_ITEM(widget),
+                                     fl_value_get_bool(is_important));
+    }
+  }
+
+  if (GTK_IS_SEPARATOR_TOOL_ITEM(widget)) {
+    FlValue* draw = fl_value_lookup_string(args, "draw");
+    if (fl_value_is_valid(draw, FL_VALUE_TYPE_BOOL)) {
+      gtk_separator_tool_item_set_draw(GTK_SEPARATOR_TOOL_ITEM(widget),
+                                       fl_value_get_bool(draw));
+    }
+  }
+
   if (GTK_IS_CONTAINER(widget)) {
     FlValue* children = fl_value_lookup_string(args, "children");
     if (fl_value_is_valid(children, FL_VALUE_TYPE_LIST)) {
@@ -407,6 +466,7 @@ static void gtk_header_bar_plugin_dispose(GObject* object) {
 }
 
 static void init_gtk_types() {
+  g_type_ensure(GTK_TYPE_BIN);
   g_type_ensure(GTK_TYPE_BUTTON);
   g_type_ensure(GTK_TYPE_CHECK_BUTTON);
   g_type_ensure(GTK_TYPE_CONTAINER);
@@ -415,7 +475,11 @@ static void init_gtk_types() {
   g_type_ensure(GTK_TYPE_MENU);
   g_type_ensure(GTK_TYPE_MENU_BUTTON);
   g_type_ensure(GTK_TYPE_MENU_ITEM);
+  g_type_ensure(GTK_TYPE_SEPARATOR_TOOL_ITEM);
   g_type_ensure(GTK_TYPE_TOGGLE_BUTTON);
+  g_type_ensure(GTK_TYPE_TOGGLE_TOOL_BUTTON);
+  g_type_ensure(GTK_TYPE_TOOL_ITEM);
+  g_type_ensure(GTK_TYPE_TOOL_BUTTON);
 }
 
 static void gtk_header_bar_plugin_class_init(GtkHeaderBarPluginClass* klass) {

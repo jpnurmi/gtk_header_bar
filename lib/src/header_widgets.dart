@@ -20,7 +20,7 @@ class GtkWidget {
   }
 }
 
-class GtkButton extends GtkWidget {
+class GtkButton extends GtkBin {
   const GtkButton({
     bool? visible,
     bool? sensitive,
@@ -132,6 +132,19 @@ abstract class GtkContainer extends GtkWidget {
   }
 }
 
+abstract class GtkBin extends GtkContainer {
+  const GtkBin({
+    bool? visible = false,
+    bool? sensitive,
+    this.child,
+  }) : super(
+          visible: visible,
+          sensitive: sensitive,
+        );
+
+  final GtkWidget? child;
+}
+
 class GtkMenu extends GtkContainer {
   const GtkMenu({
     bool? visible = false,
@@ -189,6 +202,194 @@ class GtkEntry extends GtkWidget {
     return <String, dynamic>{
       ...super.toJson(),
       'text': text,
+    };
+  }
+}
+
+class GtkToolItem extends GtkBin {
+  const GtkToolItem({
+    bool? visible,
+    bool? sensitive,
+    GtkWidget? child,
+    this.homogenous,
+    this.expand,
+    this.tooltipText,
+    this.tooltipMarkup,
+    this.useDragWindow,
+    this.visibleHorizontal,
+    this.visibleVertical,
+    this.isImportant,
+  }) : super(
+          visible: visible,
+          sensitive: sensitive,
+          child: child,
+        );
+
+  final bool? homogenous;
+  final bool? expand;
+  final String? tooltipText;
+  final String? tooltipMarkup;
+  final bool? useDragWindow;
+  final bool? visibleHorizontal;
+  final bool? visibleVertical;
+  final bool? isImportant;
+
+  @override
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      ...super.toJson(),
+      'homogenous': homogenous,
+      'expand': expand,
+      'tooltipText': tooltipText,
+      'tooltipMarkup': tooltipMarkup,
+      'useDragWindow': useDragWindow,
+      'visibleHorizontal': visibleHorizontal,
+      'visibleVertical': visibleVertical,
+      'isImportant': isImportant,
+    };
+  }
+}
+
+class GtkSeparatorToolItem extends GtkToolItem {
+  const GtkSeparatorToolItem({
+    bool? visible,
+    bool? sensitive,
+    GtkWidget? child,
+    bool? homogenous,
+    bool? expand,
+    String? tooltipText,
+    String? tooltipMarkup,
+    bool? useDragWindow,
+    bool? visibleHorizontal,
+    bool? visibleVertical,
+    bool? isImportant,
+    this.draw,
+  }) : super(
+          visible: visible,
+          sensitive: sensitive,
+          child: child,
+          homogenous: homogenous,
+          expand: expand,
+          tooltipText: tooltipText,
+          tooltipMarkup: tooltipMarkup,
+          useDragWindow: useDragWindow,
+          visibleHorizontal: visibleHorizontal,
+          visibleVertical: visibleVertical,
+          isImportant: isImportant,
+        );
+
+  final bool? draw;
+
+  @override
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      ...super.toJson(),
+      'draw': draw,
+    };
+  }
+}
+
+class GtkToolButton extends GtkToolItem {
+  const GtkToolButton({
+    bool? visible,
+    bool? sensitive,
+    GtkWidget? child,
+    bool? homogenous,
+    bool? expand,
+    String? tooltipText,
+    String? tooltipMarkup,
+    bool? useDragWindow,
+    bool? visibleHorizontal,
+    bool? visibleVertical,
+    bool? isImportant,
+    this.label,
+    this.useUnderline,
+    this.stockId,
+    this.iconName,
+    this.iconWidget,
+    this.labelWidget,
+  }) : super(
+          visible: visible,
+          sensitive: sensitive,
+          child: child,
+          homogenous: homogenous,
+          expand: expand,
+          tooltipText: tooltipText,
+          tooltipMarkup: tooltipMarkup,
+          useDragWindow: useDragWindow,
+          visibleHorizontal: visibleHorizontal,
+          visibleVertical: visibleVertical,
+          isImportant: isImportant,
+        );
+
+  final String? label;
+  final bool? useUnderline;
+  final String? stockId;
+  final String? iconName;
+  final GtkWidget? iconWidget;
+  final GtkWidget? labelWidget;
+
+  @override
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      ...super.toJson(),
+      'label': label,
+      'useUnderline': useUnderline,
+      'stockId': stockId,
+      'iconName': iconName,
+      'iconWidget': iconWidget?.toJson(),
+      'labelWidget': labelWidget?.toJson(),
+    };
+  }
+}
+
+class GtkToggleToolButton extends GtkToolButton {
+  const GtkToggleToolButton({
+    bool? visible,
+    bool? sensitive,
+    GtkWidget? child,
+    bool? homogenous,
+    bool? expand,
+    String? tooltipText,
+    String? tooltipMarkup,
+    bool? useDragWindow,
+    bool? visibleHorizontal,
+    bool? visibleVertical,
+    bool? isImportant,
+    String? label,
+    bool? useUnderline,
+    String? stockId,
+    String? iconName,
+    GtkWidget? iconWidget,
+    GtkWidget? labelWidget,
+    this.active,
+  }) : super(
+          visible: visible,
+          sensitive: sensitive,
+          child: child,
+          homogenous: homogenous,
+          expand: expand,
+          tooltipText: tooltipText,
+          tooltipMarkup: tooltipMarkup,
+          useDragWindow: useDragWindow,
+          visibleHorizontal: visibleHorizontal,
+          visibleVertical: visibleVertical,
+          isImportant: isImportant,
+          label: label,
+          useUnderline: useUnderline,
+          stockId: stockId,
+          iconName: iconName,
+          iconWidget: iconWidget,
+          labelWidget: labelWidget,
+        );
+
+  final bool? active;
+
+  @override
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      ...super.toJson(),
+      'active': active,
     };
   }
 }

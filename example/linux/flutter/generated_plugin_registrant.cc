@@ -2,8 +2,6 @@
 //  Generated file. Do not edit.
 //
 
-// clang-format off
-
 #include "generated_plugin_registrant.h"
 
 #include <gtk_header_bar/gtk_header_bar_plugin.h>
